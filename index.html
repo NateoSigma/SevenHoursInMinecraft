@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seven Hours In Minecraft</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            background: #050505;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        #menu {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 60px;
+            margin-bottom: 50px;
+            letter-spacing: 4px;
+            color: #b30000;
+            text-shadow: 0 0 10px red, 0 0 30px darkred;
+            animation: miganie 1.2s infinite;
+        }
+
+        @keyframes miganie {
+            0%, 100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.2;
+            }
+        }
+
+        button {
+            display: block;
+            width: 300px;
+            margin: 18px auto;
+            padding: 18px;
+            background: #0c0c0c;
+            color: white;
+            border: 2px solid #9b0000;
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #8b0000;
+            box-shadow: 0 0 20px red;
+            transform: scale(1.05);
+        }
+		
+		button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button:disabled:hover {
+            background: #0c0c0c;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .okno {
+            display: none;
+            position: fixed;
+            z-index: 10;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #080808;
+            border: 3px solid #9b0000;
+            box-shadow: 0 0 30px red;
+            padding: 30px;
+            width: 450px;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        #gra {
+            display: none;
+            height: 100vh;
+            background: #111;
+            position: relative;
+        }
+
+        #czas {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        #noc {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 22px;
+            color: #aaa;
+        }
+
+        .drzwi {
+            position: absolute;
+            bottom: 0;
+            width: 180px;
+            height: 70vh;
+            border: 4px solid #555;
+            background: #222;
+            text-align: center;
+            padding-top: 20px;
+        }
+		
+		.przeciwnik img {
+            width: 120px;
+            max-width: 90%;
+            image-rendering: pixelated;
+        }
+
+        #leweDrzwi {
+            left: 40px;
+        }
+
+        #praweDrzwi {
+            right: 40px;
+        }
+		
+		#vent {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+
+            width: 180px;
+            height: 90px;
+
+            background: #111;
+            border: 5px solid #555;
+            box-shadow: inset 0 0 20px #000;
+
+            overflow: hidden;
+        }
+
+        .vent-rurka {
+            width: 100%;
+            height: 100%;
+        
+            background:
+                repeating-linear-gradient(
+                    0deg,
+                    #333 0px,
+                    #333 8px,
+                            #111 8px,
+                    #111 14px
+                );
+        
+            opacity: 0.8;
+        }
+		
+		#przyciskVent {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+
+            width: 150px;
+            padding: 8px;
+            margin: 0;
+
+            font-size: 14px;
+            z-index: 2;
+        }
+
+        #vent.zamkniety {
+            background: #700000;
+            border-color: red;
+        }
+		
+		.enderman {
+            margin-top: 10px;
+        }
+
+        .enderman img {
+            width: 100px;
+            image-rendering: pixelated;
+        }
+		
+		#creacing {
+            display: none;
+            position: absolute;
+            top: 25%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+        }
+
+        #creacing img {
+            width: 180px;
+            image-rendering: pixelated;
+            animation: miganie 0.5s infinite;
+        }
+
+        .drzwi.zamkniete {
+            background: #700000;
+            border-color: red;
+        }
+
+        .przeciwnik {
+            display: none;
+            margin-top: 50px;
+            font-size: 30px;
+            color: red;
+            animation: miganie 0.4s infinite;
+        }
+
+        .przyciskDrzwi {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #komunikat {
+            position: absolute;
+            top: 80px;
+            width: 100%;
+            text-align: center;
+            color: #ff5555;
+            font-size: 22px;
+        }
+
+		#flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        #flash.aktywny {
+            animation: blysk 1.5s ease-out forwards;
+        }
+
+		#flashCooldown {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #00ff00;
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 0 0 8px currentColor;
+        }
+
+        #flashCooldown.cooldown {
+            color: red;
+        }
+
+		#bateriaPanel {
+            position: absolute;
+            top: 110px;
+            left: 20px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 200;
+        }
+
+        #bateriaTlo {
+            width: 150px;
+            height: 15px;
+            background: #333;
+            border: 2px solid white;
+            margin-top: 5px;
+        }
+
+        #bateriaPasek {
+            width: 100%;
+            height: 100%;
+            background: limegreen;
+            transition: width 0.2s, background 0.2s;
+        }
+
+        @keyframes blysk {
+            0% {
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="menu">
+        <div>
+            <h1>SEVEN HOURS<br>IN MINECRAFT</h1>
+
+            <button onclick="opisPrzeciwnikow()">
+                Description Monster
+            </button>
+			
+			<button onclick="pokazSterowanie()">
+			    Controls
+			</button>
+
+            <button onclick="wyborNocy()">
+                Choice of the Night
+            </button>
+        </div>
+    </div>
+
+    <div class="okno" id="opisOkno">
+        <h2>Description Monster</h2>
+
+        <h3>Zombie</h3>
+        <p>
+            It appears in the left door, you have
+            <b>5 seconds</b> to close it.
+        </p>
+
+        <hr>
+
+        <h3>Skeleton</h3>
+        <p>
+            It appears in the right door, you have
+            <b>4 seconds</b> to close it.
+        </p>
+
+        <hr>
+
+        <h3>Slime</h3>
+        <p>
+            It appears in the vent, you have
+            <b>6 seconds</b> to close it.
+        </p>
+
+        <hr>
+
+        <h3>Enderman</h3>
+        <p>
+            It appears in the left or right door, you have
+            <b>2.5 seconds</b> to close it.
+        </p>
+		
+		<hr>
+		
+		<h3>Creacing</h3>
+        <p>
+            He appears in the middle of the screen, to defeat him you need to press F
+            <b>3 seconds</b>
+        </p>
+
+        <button onclick="zamknijOpis()">BACK</button>
+    </div>
+	
+	<div class="okno" id="sterowanieOkno">
+        <h2>CONTROLS</h2>
+
+        <p><b>A</b> – Close Left Door</p>
+        <p><b>D</b> – Close Right Door</p>
+        <p><b>S</b> – Close Vent</p>
+        <p><b>F</b> – Flash</p>
+
+        <button onclick="zamknijSterowanie()">BACK</button>
+    </div>
+
+    <div class="okno" id="wyborNocyOkno">
+        <h2>Choice of the Night</h2>
+
+        <button onclick="rozpocznijNight(1)">NIGHT 1</button>
+		<button id="night2Button" onclick="rozpocznijNight(2)" style="display: none;">NIGHT 2</button>
+		<button id="night3Button" onclick="rozpocznijNight(3)" style="display: none;">NIGHT 3</button>
+		<button id="night4Button" onclick="rozpocznijNight(4)" style="display: none;">NIGHT 4</button>
+
+        <button onclick="zamknijWyborNocy()">
+            === BACK ===
+        </button>
+    </div>
+	
+	<div class="okno" id="wygranaOkno">
+        <h2>Winner!</h2>
+        <p>Won Night 1!</p>
+
+        <button onclick="zamknijWygrana()">
+            BACK
+        </button>
+    </div>
+	
+    <div id="gra">
+	    <div id="flash"></div>
+
+        <div id="czas">12 AM</div>
+		        <div id="bateriaPanel">
+            BATTERY: <span id="bateriaTekst">100%</span>
+
+            <div id="bateriaTlo">
+                <div id="bateriaPasek"></div>
+            </div>
+        </div>
+        <div id="noc">NIGHT 1</div>
+		<div id="flashCooldown">FLASH: READY</div>
+        <div id="komunikat"></div>
+		
+		<div id="creacing">
+            <img src="creacing.png" alt="Creacing">
+        </div>
+
+        <div class="drzwi" id="leweDrzwi">
+            <div id="zombie" class="przeciwnik">
+                <img src="zombie.png" alt="Zombie">
+            </div>
+			
+			<div id="endermanLewy" class="przeciwnik enderman">
+			    <img src="enderman.png" alt="Enderman">
+			</div>
+
+            <button class="przyciskDrzwi"
+                    onclick="zamknijLeweDrzwi()">
+                CLOSE
+            </button>
+        </div>
+
+        <div class="drzwi" id="praweDrzwi">
+            <div id="skeleton" class="przeciwnik">
+                <img src="skeleton.png" alt="Skeleton">
+            </div>
+			
+			<div id="endermanPrawy" class="przeciwnik enderman">
+                <img src="enderman.png" alt="Enderman">
+            </div>
+
+            <button class="przyciskDrzwi"
+                    onclick="zamknijPraweDrzwi()">
+                CLOSE
+            </button>
+        </div>
+
+    <div id="vent">
+
+        <div id="slime" class="przeciwnik">
+            <img src="slime.png" alt="Slime">
+        </div>
+
+        <div class="vent-rurka"></div>
+
+        <button id="przyciskVent" onclick="zamknijVent()">
+            CLOSE VENT
+        </button>
+
+    </div>
+
+    </div>
+
+    <script>
+        let zombieSpawnTimer;
+        let skeletonSpawnTimer;
+        let zombieAttackTimer;
+        let skeletonAttackTimer;
+		let slimeSpawnTimer;
+        let slimeAttackTimer;
+		let endermanSpawnTimer;
+        let endermanAttackTimer;
+		let creacingSpawnTimer;
+        let creacingAttackTimer;
+
+        let gameTimer;
+		
+		
+		
+        let flashCooldownTimer = null;
+        let aktualnaNoc = 1;
+		let odblokowanaNoc = Number(localStorage.getItem("odblokowanaNoc")) || 1;
+		
+        let godzina = 0;
+		let bateria = 100;
+        
+        let graTrwa = false;
+
+        let endermanStrona = null;
+		
+		let flashGotowy = true;
+
+        let zombieAktywny = false;
+        let skeletonAktywny = false;
+		let slimeAktywny = false;
+		let endermanAktywny = false;
+        let creacingAktywny = false;
+
+        function opisPrzeciwnikow() {
+            document.getElementById("menu").style.display = "none";
+            document.getElementById("opisOkno").style.display = "block";
+        }
+
+        function zamknijOpis() {
+            document.getElementById("opisOkno").style.display = "none";
+            document.getElementById("menu").style.display = "flex";
+        }
+		
+		function pokazSterowanie() {
+            document.getElementById("menu").style.display = "none";
+            document.getElementById("sterowanieOkno").style.display = "block";
+        }
+
+        function zamknijSterowanie() {
+            document.getElementById("sterowanieOkno").style.display = "none";
+            document.getElementById("menu").style.display = "flex";
+        }
+
+        function wyborNocy() {
+
+            document.getElementById("wyborNocyOkno").style.display = "block";
+
+            if (odblokowanaNoc >= 2) {
+                document.getElementById("night2Button").style.display = "block";
+            }
+
+            if (odblokowanaNoc >= 3) {
+                document.getElementById("night3Button").style.display = "block";
+            }
+			
+			if (odblokowanaNoc >= 4) {
+                document.getElementById("night4Button").style.display = "block";
+            }
+			
+        }
+		
+        function zamknijWyborNocy() {
+            document.getElementById("wyborNocyOkno").style.display = "none";
+        }
+
+        function rozpocznijNight(numerNocy) {
+				
+            wyczyscTimery();
+
+            aktualnaNoc = numerNocy;
+
+            graTrwa = true;
+            godzina = 0;
+			bateria = 100;
+
+            flashGotowy = true;
+            if (flashCooldownTimer !== null) {
+                clearInterval(flashCooldownTimer);
+                flashCooldownTimer = null;
+            }
+            document.getElementById("flashCooldown").textContent = "FLASH: READY";
+            document.getElementById("flashCooldown").classList.remove("cooldown");
+            document.getElementById("flash").classList.remove("aktywny");
+
+            zombieAktywny = false;
+            skeletonAktywny = false;
+			slimeAktywny = false;
+            endermanAktywny = false;
+            creacingAktywny = false;
+
+            document.getElementById("wyborNocyOkno").style.display = "none";
+            document.getElementById("noc").textContent = "NIGHT " + aktualnaNoc;
+
+            document.getElementById("menu").style.display = "none";
+            document.getElementById("opisOkno").style.display = "none";
+            document.getElementById("gra").style.display = "block";
+
+            document.getElementById("czas").textContent = "12 AM";
+            document.getElementById("komunikat").textContent = "";
+
+            document.getElementById("bateriaTekst").textContent = "100%";
+            document.getElementById("bateriaPasek").style.width = "100%";
+            document.getElementById("bateriaPasek").style.background = "limegreen";
+
+            document.getElementById("zombie").style.display = "none";
+            document.getElementById("skeleton").style.display = "none";
+            document.getElementById("slime").style.display = "none";
+            document.getElementById("endermanLewy").style.display = "none";
+            document.getElementById("endermanPrawy").style.display = "none";
+            document.getElementById("creacing").style.display = "none";
+
+            document.getElementById("leweDrzwi").classList.remove("zamkniete");
+            document.getElementById("praweDrzwi").classList.remove("zamkniete");
+            document.getElementById("vent").classList.remove("zamkniety");
+
+            gameTimer = setInterval(function() {
+
+                if (!graTrwa) return;
+
+                godzina++;
+
+                if (godzina < 7) {
+                    document.getElementById("czas").textContent =
+                        godzina + " AM";
+                } else {
+                    document.getElementById("czas").textContent = "7 AM";
+                    zakonczNight();
+                }
+
+            }, 15000);
+
+            ustawZombie();
+            ustawSkeleton();
+
+            if (aktualnaNoc >= 2) {
+                ustawSlime();
+            }
+
+            if (aktualnaNoc >= 3) {
+                ustawEnderman();
+            }
+			
+			if (aktualnaNoc >= 4) {
+                creacingAktywny = false;
+                document.getElementById("creacing").style.display = "none";
+                ustawCreacing();
+            }
+			
+        }
+		
+		function czasPotwora(czas) {
+            const przyspieszenie = (aktualnaNoc - 1) * 200;
+            return Math.max(500, czas - przyspieszenie);
+        }
+
+        function ustawZombie() {
+
+            if (!graTrwa) return;
+
+            zombieAktywny = false;
+            document.getElementById("zombie").style.display = "none";
+
+            let czasZombie = czasPotwora(Math.random() * 7000 + 6000);
+
+            zombieSpawnTimer = setTimeout(function() {
+
+                if (!graTrwa) return;
+
+                
+                if (document.getElementById("leweDrzwi").classList.contains("zamkniete")) {
+                    ustawZombie();
+                    return;
+                }
+zombieAktywny = true;
+                document.getElementById("zombie").style.display = "block";
+
+                document.getElementById("komunikat").textContent =
+                    "ZOMBIE! Close Left Door!";
+
+                zombieAttackTimer = setTimeout(function() {
+
+                    if (graTrwa && zombieAktywny) {
+                        przegrana("Zombie");
+                    }
+
+                }, czasPotwora(5000));
+
+            }, czasZombie);
+        }
+
+
+        function zamknijLeweDrzwi() {
+
+            if (!graTrwa) return;
+			
+			const drzwi = document.getElementById("leweDrzwi");
+
+            if (drzwi.classList.contains("zamkniete")) return;
+            if (!zuzyjBaterie(0.5)) return;
+
+            document
+                .getElementById("leweDrzwi")
+                .classList.add("zamkniete");
+
+            if (zombieAktywny) {
+
+                clearTimeout(zombieAttackTimer);
+
+                zombieAktywny = false;
+
+                document.getElementById("zombie").style.display = "none";
+
+                ustawZombie();
+            }
+
+            if (endermanAktywny && endermanStrona === "lewe") {
+
+                clearTimeout(endermanAttackTimer);
+
+                endermanAktywny = false;
+                endermanStrona = null;
+
+                document.getElementById("endermanLewy").style.display = "none";
+
+                ustawEnderman();
+            }
+
+
+            document.getElementById("komunikat").textContent = "";
+
+            setTimeout(function() {
+
+                if (!graTrwa) return;
+
+                document
+                    .getElementById("leweDrzwi")
+                    .classList.remove("zamkniete");
+
+            }, 500);
+        }
+
+        function ustawSkeleton() {
+
+            if (!graTrwa) return;
+
+            skeletonAktywny = false;
+            document.getElementById("skeleton").style.display = "none";
+
+            let czasSkeleton = czasPotwora(Math.random() * 7000 + 5500);
+
+            skeletonSpawnTimer = setTimeout(function() {
+
+                if (!graTrwa) return;
+
+                
+                if (document.getElementById("praweDrzwi").classList.contains("zamkniete")) {
+                    ustawSkeleton();
+                    return;
+                }
+skeletonAktywny = true;
+                document.getElementById("skeleton").style.display = "block";
+
+                document.getElementById("komunikat").textContent =
+                    "SKELETON! Close Right Door!";
+
+                skeletonAttackTimer = setTimeout(function() {
+
+                    if (graTrwa && skeletonAktywny) {
+                        przegrana("Skeleton");
+                    }
+
+                }, czasPotwora(4000));
+
+            }, czasSkeleton);
+        }
+		
+		function ustawSlime() {
+
+            if (!graTrwa || aktualnaNoc < 2) return;
+			
+            slimeAktywny = false;
+            document.getElementById("slime").style.display = "none";
+
+            let czasSlime = czasPotwora(Math.random() * 9000 + 7200);
+
+            slimeSpawnTimer = setTimeout(function() {
+
+                if (!graTrwa || aktualnaNoc < 2) return;
+
+                
+                if (document.getElementById("vent").classList.contains("zamkniety")) {
+                    ustawSlime();
+                    return;
+                }
+slimeAktywny = true;
+
+                document.getElementById("slime").style.display = "block";
+
+                document.getElementById("komunikat").textContent =
+                    "SLIME! Close Vent!";
+
+                slimeAttackTimer = setTimeout(function() {
+
+                    if (graTrwa && slimeAktywny) {
+                        przegrana("Slime");
+                    }
+
+                }, czasPotwora(6400));
+
+            }, czasSlime);
+        }
+
+        function ustawEnderman() {
+            if (!graTrwa || aktualnaNoc < 3) return;
+
+            endermanAktywny = false;
+            endermanStrona = null;
+
+            document.getElementById("endermanLewy").style.display = "none";
+            document.getElementById("endermanPrawy").style.display = "none";
+
+            let czasEndermana = czasPotwora(Math.random() * 3000 + 1800);
+
+            endermanSpawnTimer = setTimeout(function () {
+                if (!graTrwa || aktualnaNoc < 3) return;
+
+                const strona = Math.random() < 0.5 ? "lewe" : "prawe";
+
+                const wybraneDrzwi = strona === "lewe"
+                    ? document.getElementById("leweDrzwi")
+                    : document.getElementById("praweDrzwi");
+
+                if (wybraneDrzwi.classList.contains("zamkniete")) {
+                    ustawEnderman();
+                    return;
+                }
+
+                endermanStrona = strona;
+                endermanAktywny = true;
+
+                if (endermanStrona === "lewe") {
+                    document.getElementById("endermanLewy").style.display = "block";
+                } else {
+                    document.getElementById("endermanPrawy").style.display = "block";
+                }
+
+                document.getElementById("komunikat").textContent =
+                    "ENDERMAN! Close Door!";
+
+                endermanAttackTimer = setTimeout(function () {
+                    if (graTrwa && endermanAktywny) {
+                        przegrana("Enderman");
+                    }
+                }, czasPotwora(2600));
+
+            }, czasEndermana);
+        }
+		
+		function ustawCreacing() {
+            if (!graTrwa || aktualnaNoc < 4) return;
+
+            creacingSpawnTimer = setTimeout(function() {
+                if (!graTrwa) return;
+
+                creacingAktywny = true;
+
+                document.getElementById("creacing").style.display = "block";
+
+                document.getElementById("komunikat").innerText =
+                    "CREACING! USE FLASH!";
+
+                creacingAttackTimer = setTimeout(function() {
+                    if (creacingAktywny) {
+                        przegrana("Creacing");
+                    }
+                }, czasPotwora(4000));
+
+            }, 6000);
+        }
+
+        function zamknijPraweDrzwi() {
+
+            if (!graTrwa) return;
+
+            const drzwi = document.getElementById("praweDrzwi");
+
+            if (drzwi.classList.contains("zamkniete")) return;
+            if (!zuzyjBaterie(0.5)) return;
+
+            document
+                .getElementById("praweDrzwi")
+                .classList.add("zamkniete");
+
+            if (skeletonAktywny) {
+
+                clearTimeout(skeletonAttackTimer);
+
+                skeletonAktywny = false;
+
+                document.getElementById("skeleton").style.display = "none";
+
+                ustawSkeleton();
+            }
+
+            if (endermanAktywny && endermanStrona === "prawe") {
+
+                clearTimeout(endermanAttackTimer);
+
+                endermanAktywny = false;
+                endermanStrona = null;
+
+                document.getElementById("endermanPrawy").style.display = "none";
+
+                ustawEnderman();
+            }
+
+
+            document.getElementById("komunikat").textContent = "";
+
+            setTimeout(function() {
+
+                if (!graTrwa) return;
+
+                document
+                    .getElementById("praweDrzwi")
+                    .classList.remove("zamkniete");
+
+            }, 500);
+        }
+		
+		function zamknijVent() {
+            if (!graTrwa) return;
+
+            const vent = document.getElementById("vent");
+            if (vent.classList.contains("zamkniety")) return;
+            if (!zuzyjBaterie(0.7)) return;
+
+            vent.classList.add("zamkniety");
+            clearTimeout(slimeSpawnTimer);
+
+            if (slimeAktywny) {
+                clearTimeout(slimeAttackTimer);
+                slimeAktywny = false;
+                document.getElementById("slime").style.display = "none";
+                document.getElementById("komunikat").textContent = "";
+            }
+
+            setTimeout(function() {
+                if (!graTrwa) return;
+
+                vent.classList.remove("zamkniety");
+                ustawSlime();
+            }, 1000);
+        }
+
+        function zrobBlysk() {
+            if (!graTrwa || !flashGotowy) return false;
+
+            if (!zuzyjBaterie(1.5)) return false;
+
+            flashGotowy = false;
+
+            const flash = document.getElementById("flash");
+            const licznik = document.getElementById("flashCooldown");
+
+            flash.classList.remove("aktywny");
+            void flash.offsetWidth;
+            flash.classList.add("aktywny");
+
+            let pozostalo = 2;
+
+            licznik.textContent = "FLASH: " + pozostalo;
+            licznik.classList.add("cooldown");
+
+            flashCooldownTimer = setInterval(function() {
+                pozostalo--;
+
+                if (pozostalo > 0) {
+                    licznik.textContent = "FLASH: " + pozostalo;
+                } else {
+                    clearInterval(flashCooldownTimer);
+                    flashCooldownTimer = null;
+
+                    flashGotowy = true;
+                    licznik.textContent = "FLASH: READY";
+                    licznik.classList.remove("cooldown");
+                }
+            }, 1000);
+
+            return true;
+        }
+
+		function zuzyjBaterie(ile) {
+            if (bateria <= 0) return false;
+
+            bateria = Math.max(0, bateria - ile);
+
+            document.getElementById("bateriaTekst").textContent =
+                bateria.toFixed(1) + "%";
+
+            document.getElementById("bateriaPasek").style.width =
+                bateria + "%";
+
+            if (bateria <= 20) {
+                document.getElementById("bateriaPasek").style.background = "red";
+            } else if (bateria <= 50) {
+                document.getElementById("bateriaPasek").style.background = "orange";
+            } else {
+                document.getElementById("bateriaPasek").style.background = "limegreen";
+            }
+
+            return true;
+        }
+
+        function przegrana(przeciwnik) {
+
+            if (!graTrwa) return;
+
+            graTrwa = false;
+
+            wyczyscTimery();
+
+            alert("You lost, he killed you: " + przeciwnik);
+
+            document.getElementById("gra").style.display = "none";
+            document.getElementById("menu").style.display = "flex";
+        }
+		
+		function zamknijWygrana() {
+            document.getElementById("wygranaOkno").style.display = "none";
+            document.getElementById("menu").style.display = "flex";
+        }
+
+        function zakonczNight() {
+
+            graTrwa = false;
+
+            wyczyscTimery();
+
+            if (aktualnaNoc === 1) {
+                document.getElementById("night2Button").style.display = "block";
+            }
+			
+			if (aktualnaNoc === 2) {
+                document.getElementById("night3Button").style.display = "block";
+            }
+			
+			if (aktualnaNoc === 3) {
+                document.getElementById("night4Button").style.display = "block";
+            }
+
+            document.getElementById("gra").style.display = "none";
+            document.getElementById("wygranaOkno").style.display = "block";
+
+            document.querySelector("#wygranaOkno p").textContent =
+                "Won Night " + aktualnaNoc + "!";
+				
+			if (aktualnaNoc + 1 > odblokowanaNoc) {
+                odblokowanaNoc = aktualnaNoc + 1;
+                localStorage.setItem("odblokowanaNoc", odblokowanaNoc);
+            }
+        }
+
+        function wyczyscTimery() {
+            clearTimeout(zombieSpawnTimer);
+            clearTimeout(skeletonSpawnTimer);
+			clearTimeout(slimeSpawnTimer);
+            clearTimeout(zombieAttackTimer);
+            clearTimeout(skeletonAttackTimer);
+			clearTimeout(slimeAttackTimer);
+			clearTimeout(endermanSpawnTimer);
+            clearTimeout(endermanAttackTimer);
+			clearTimeout(creacingSpawnTimer);
+            clearTimeout(creacingAttackTimer);
+            clearInterval(gameTimer);
+            if (flashCooldownTimer !== null) {
+                clearInterval(flashCooldownTimer);
+                flashCooldownTimer = null;
+            }
+        }
+		
+		document.addEventListener("keydown", function(event) {
+            if (!graTrwa) return;
+
+            if (event.key.toLowerCase() === "a") {
+                zamknijLeweDrzwi();
+            }
+
+            if (event.key.toLowerCase() === "d") {
+                zamknijPraweDrzwi();
+            }
+
+            if (event.key.toLowerCase() === "s") {
+                zamknijVent();
+            }
+			
+			if (event.key.toLowerCase() === "f") {
+                if (!zrobBlysk()) return;
+
+                if (creacingAktywny) {
+                    clearTimeout(creacingAttackTimer);
+                    creacingAktywny = false;
+                    document.getElementById("creacing").style.display = "none";
+                    document.getElementById("komunikat").innerText = "";
+                    ustawCreacing();
+                }
+            }
+        });
+
+    </script>
+
+</body>
+</html>
