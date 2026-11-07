@@ -216,6 +216,63 @@
             image-rendering: pixelated;
             animation: miganie 0.5s infinite;
         }
+		
+		#spider {
+            display: none;
+            position: absolute;
+            top: 25%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 500;
+        }
+
+        #spider img {
+            width: 150px;
+            image-rendering: pixelated;
+            animation: spiderRuch 0.4s infinite alternate;
+        }
+		
+		#phantom {
+            display: none;
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+        }
+
+        #phantom img {
+            width: 180px;
+            image-rendering: pixelated;
+        }
+
+        @keyframes spiderRuch {
+            from {
+                transform: translateY(0);
+            }
+            to {
+                transform: translateY(-10px);
+            }
+        }
+
+        .pajeczyna {
+            outline: 3px solid white;
+            box-shadow: 0 0 15px white;
+        }
+
+
+        .pajeczyna::after {
+            content: "🕸️";
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 45px;
+            background: rgba(0, 0, 0, 0.65);
+            z-index: 300;
+            pointer-events: none;
+        }
 
         .drzwi.zamkniete {
             background: #700000;
@@ -264,7 +321,7 @@
 
 		#flashCooldown {
             position: absolute;
-            top: 80px;
+            top: 125px;
             left: 50%;
             transform: translateX(-50%);
             color: #00ff00;
@@ -378,6 +435,16 @@
             He appears in the middle of the screen, to defeat him you need to press F
             <b>3 seconds</b>
         </p>
+		
+		<hr>
+
+		<h3>Spider</h3>
+		<p>It covers a door or the vent with a web. Use F to remove it.</p>
+
+		<hr>
+
+		<h3>Phantom</h3>
+		<p>It appears every 8.5–10 seconds. Press E to fend it off with a quick electric shock. You have 3 seconds to do so.</p>
 
         <button onclick="zamknijOpis()">BACK</button>
     </div>
@@ -389,6 +456,7 @@
         <p><b>D</b> – Close Right Door</p>
         <p><b>S</b> – Close Vent</p>
         <p><b>F</b> – Flash</p>
+		<p><b>E</b> – Electric shock</p>
 
         <button onclick="zamknijSterowanie()">BACK</button>
     </div>
@@ -396,14 +464,14 @@
     <div class="okno" id="wyborNocyOkno">
         <h2>Choice of the Night</h2>
 
-        <button onclick="rozpocznijNight(1)">NIGHT 1</button>
-		<button id="night2Button" onclick="rozpocznijNight(2)" style="display: none;">NIGHT 2</button>
-		<button id="night3Button" onclick="rozpocznijNight(3)" style="display: none;">NIGHT 3</button>
-		<button id="night4Button" onclick="rozpocznijNight(4)" style="display: none;">NIGHT 4</button>
-
-        <button onclick="zamknijWyborNocy()">
-            === BACK ===
-        </button>
+        <button onclick="muzykaNocy(1); rozpocznijNight(1)">NIGHT 1</button>
+        <button id="night2Button" onclick="muzykaNocy(2); rozpocznijNight(2)" style="display: none;">NIGHT 2</button>
+        <button id="night3Button" onclick="muzykaNocy(3); rozpocznijNight(3)" style="display: none;">NIGHT 3</button>
+        <button id="night4Button" onclick="muzykaNocy(4); rozpocznijNight(4)" style="display: none;">NIGHT 4</button>
+        <button id="night5Button" onclick="muzykaNocy(5); rozpocznijNight(5)" style="display: none;">NIGHT 5</button>
+        <button id="night6Button" onclick="muzykaNocy(6); rozpocznijNight(6)" style="display: none;">NIGHT 6</button>
+		
+        <button onclick="zamknijWyborNocy()">=== BACK ===</button>
     </div>
 	
 	<div class="okno" id="wygranaOkno">
@@ -428,10 +496,17 @@
         </div>
         <div id="noc">NIGHT 1</div>
 		<div id="flashCooldown">FLASH: READY</div>
+		<div id="phantom">
+            <img src="phantom.png" alt="Phantom">
+        </div>
         <div id="komunikat"></div>
 		
 		<div id="creacing">
             <img src="creacing.png" alt="Creacing">
+        </div>
+		
+		<div id="spider">
+            <img src="spider.png" alt="Spider">
         </div>
 
         <div class="drzwi" id="leweDrzwi">
@@ -491,11 +566,14 @@
         let endermanAttackTimer;
 		let creacingSpawnTimer;
         let creacingAttackTimer;
+		let spiderSpawnTimer;
+        let spiderAttackTimer;
+        let spiderWebTimer;
+        let phantomSpawnTimer;
+        let phantomAttackTimer;
 
         let gameTimer;
-		
-		
-		
+
         let flashCooldownTimer = null;
         let aktualnaNoc = 1;
 		let odblokowanaNoc = Number(localStorage.getItem("odblokowanaNoc")) || 1;
@@ -506,6 +584,7 @@
         let graTrwa = false;
 
         let endermanStrona = null;
+		let spiderMiejsce = null;
 		
 		let flashGotowy = true;
 
@@ -514,6 +593,8 @@
 		let slimeAktywny = false;
 		let endermanAktywny = false;
         let creacingAktywny = false;
+		let spiderAktywny = false;
+		let phantomAktywny = false;
 
         function opisPrzeciwnikow() {
             document.getElementById("menu").style.display = "none";
@@ -551,6 +632,14 @@
                 document.getElementById("night4Button").style.display = "block";
             }
 			
+			if (odblokowanaNoc >= 5) {
+                document.getElementById("night5Button").style.display = "block";
+            }
+
+			if (odblokowanaNoc >= 6) {
+                document.getElementById("night6Button").style.display = "block";
+            }
+
         }
 		
         function zamknijWyborNocy() {
@@ -581,6 +670,11 @@
 			slimeAktywny = false;
             endermanAktywny = false;
             creacingAktywny = false;
+			spiderAktywny = false;
+            phantomAktywny = false;
+
+            spiderMiejsce = null;
+            document.getElementById("phantom").style.display = "none";
 
             document.getElementById("wyborNocyOkno").style.display = "none";
             document.getElementById("noc").textContent = "NIGHT " + aktualnaNoc;
@@ -606,6 +700,12 @@
             document.getElementById("leweDrzwi").classList.remove("zamkniete");
             document.getElementById("praweDrzwi").classList.remove("zamkniete");
             document.getElementById("vent").classList.remove("zamkniety");
+
+            document.getElementById("spider").style.display = "none";
+
+            document.getElementById("leweDrzwi").classList.remove("pajeczyna");
+            document.getElementById("praweDrzwi").classList.remove("pajeczyna");
+            document.getElementById("vent").classList.remove("pajeczyna");
 
             gameTimer = setInterval(function() {
 
@@ -640,6 +740,27 @@
                 ustawCreacing();
             }
 			
+			if (aktualnaNoc >= 5) {
+                ustawSpider();
+            }
+
+			if (aktualnaNoc >= 6) {
+                ustawPhantom();
+            }
+
+        }
+		
+		let aktualnaMuzyka = null;
+
+        function muzykaNocy(numer) {
+            if (aktualnaMuzyka) {
+                aktualnaMuzyka.pause();
+                aktualnaMuzyka.currentTime = 0;
+            }
+
+            aktualnaMuzyka = new Audio(numer + ".mp3");
+            aktualnaMuzyka.loop = false;
+            aktualnaMuzyka.play();
         }
 		
 		function czasPotwora(czas) {
@@ -665,7 +786,7 @@
                     ustawZombie();
                     return;
                 }
-zombieAktywny = true;
+                zombieAktywny = true;
                 document.getElementById("zombie").style.display = "block";
 
                 document.getElementById("komunikat").textContent =
@@ -686,7 +807,10 @@ zombieAktywny = true;
         function zamknijLeweDrzwi() {
 
             if (!graTrwa) return;
-			
+
+			if (document.getElementById("leweDrzwi")
+                .classList.contains("pajeczyna")) return;
+
 			const drzwi = document.getElementById("leweDrzwi");
 
             if (drzwi.classList.contains("zamkniete")) return;
@@ -725,7 +849,7 @@ zombieAktywny = true;
             setTimeout(function() {
 
                 if (!graTrwa) return;
-
+				
                 document
                     .getElementById("leweDrzwi")
                     .classList.remove("zamkniete");
@@ -751,7 +875,8 @@ zombieAktywny = true;
                     ustawSkeleton();
                     return;
                 }
-skeletonAktywny = true;
+                skeletonAktywny = true;
+
                 document.getElementById("skeleton").style.display = "block";
 
                 document.getElementById("komunikat").textContent =
@@ -786,7 +911,7 @@ skeletonAktywny = true;
                     ustawSlime();
                     return;
                 }
-slimeAktywny = true;
+                slimeAktywny = true;
 
                 document.getElementById("slime").style.display = "block";
 
@@ -867,14 +992,81 @@ slimeAktywny = true;
                     if (creacingAktywny) {
                         przegrana("Creacing");
                     }
-                }, czasPotwora(4000));
+                }, 3000);
 
-            }, 6000);
+            }, 5000);
         }
+		
+		function ustawSpider() {
+            if (!graTrwa || aktualnaNoc < 5) return;
+
+            spiderSpawnTimer = setTimeout(function() {
+                if (!graTrwa) return;
+
+                spiderAktywny = true;
+
+                const miejsca = [
+                    "leweDrzwi",
+                    "praweDrzwi",
+                    "vent"
+                ];
+
+                spiderMiejsce = miejsca[
+                    Math.floor(Math.random() * miejsca.length)
+                ];
+
+                document.getElementById("spider").style.display = "block";
+
+                document.getElementById(spiderMiejsce)
+                    .classList.add("pajeczyna");
+
+                document.getElementById("komunikat").textContent =
+                    "SPIDER! USE FLASH!";
+
+                spiderWebTimer = setTimeout(function() {
+                    if (spiderAktywny) {
+                        document.getElementById(spiderMiejsce)
+                            .classList.remove("pajeczyna");
+                    }
+                }, 4000);
+
+                spiderAttackTimer = setTimeout(function() {
+                    if (spiderAktywny) {
+                        przegrana("Spider");
+                    }
+                }, 5000);
+
+            }, Math.random() * 5000 + 10000);
+        }
+
+		function ustawPhantom() {
+            if (!graTrwa || aktualnaNoc < 6) return;
+
+            phantomSpawnTimer = setTimeout(function() {
+                if (!graTrwa) return;
+
+                phantomAktywny = true;
+
+                document.getElementById("phantom").style.display = "block";
+                document.getElementById("komunikat").textContent =
+                    "PHANTOM! PRESS E!";
+
+                phantomAttackTimer = setTimeout(function() {
+                    if (phantomAktywny) {
+                        przegrana("Phantom");
+                    }
+                }, 3000);
+
+            }, Math.random() * 1500 + 8500);
+        }
+
 
         function zamknijPraweDrzwi() {
 
             if (!graTrwa) return;
+			
+			if (document.getElementById("praweDrzwi")
+                .classList.contains("pajeczyna")) return;
 
             const drzwi = document.getElementById("praweDrzwi");
 
@@ -914,7 +1106,7 @@ slimeAktywny = true;
             setTimeout(function() {
 
                 if (!graTrwa) return;
-
+				
                 document
                     .getElementById("praweDrzwi")
                     .classList.remove("zamkniete");
@@ -924,6 +1116,9 @@ slimeAktywny = true;
 		
 		function zamknijVent() {
             if (!graTrwa) return;
+
+			if (document.getElementById("vent")
+                .classList.contains("pajeczyna")) return;
 
             const vent = document.getElementById("vent");
             if (vent.classList.contains("zamkniety")) return;
@@ -966,8 +1161,12 @@ slimeAktywny = true;
             licznik.textContent = "FLASH: " + pozostalo;
             licznik.classList.add("cooldown");
 
+            if (flashCooldownTimer) {
+                clearInterval(flashCooldownTimer);
+            }
+
             flashCooldownTimer = setInterval(function() {
-                pozostalo--;
+            pozostalo--;
 
                 if (pozostalo > 0) {
                     licznik.textContent = "FLASH: " + pozostalo;
@@ -984,8 +1183,26 @@ slimeAktywny = true;
             return true;
         }
 
+		function blyskPhantom() {
+            if (!graTrwa || !phantomAktywny) return;
+
+            const flash = document.getElementById("flash");
+
+            flash.classList.remove("aktywny");
+            flash.style.animation = "none";
+            void flash.offsetWidth;
+            flash.style.animation = "blysk 0.25s ease-out forwards";
+
+            flash.addEventListener("animationend", function przywrocFlash() {
+                flash.style.animation = "";
+                flash.removeEventListener("animationend", przywrocFlash);
+            });
+
+            pokonajPhantom();
+        }
+
 		function zuzyjBaterie(ile) {
-            if (bateria <= 0) return false;
+            if (bateria < ile) return false;
 
             bateria = Math.max(0, bateria - ile);
 
@@ -1005,6 +1222,40 @@ slimeAktywny = true;
 
             return true;
         }
+		
+		function pokonajSpidera() {
+            if (!spiderAktywny) return;
+
+            clearTimeout(spiderAttackTimer);
+            clearTimeout(spiderWebTimer);
+
+            spiderAktywny = false;
+
+            document.getElementById("spider").style.display = "none";
+
+            if (spiderMiejsce) {
+                document.getElementById(spiderMiejsce)
+                    .classList.remove("pajeczyna");
+            }
+
+            spiderMiejsce = null;
+
+            document.getElementById("komunikat").textContent = "";
+
+            ustawSpider();
+        }
+
+		function pokonajPhantom() {
+            if (!phantomAktywny) return;
+
+            clearTimeout(phantomAttackTimer);
+            phantomAktywny = false;
+
+            document.getElementById("phantom").style.display = "none";
+            document.getElementById("komunikat").textContent = "";
+
+            ustawPhantom();
+        }
 
         function przegrana(przeciwnik) {
 
@@ -1019,7 +1270,7 @@ slimeAktywny = true;
             document.getElementById("gra").style.display = "none";
             document.getElementById("menu").style.display = "flex";
         }
-		
+
 		function zamknijWygrana() {
             document.getElementById("wygranaOkno").style.display = "none";
             document.getElementById("menu").style.display = "flex";
@@ -1034,13 +1285,21 @@ slimeAktywny = true;
             if (aktualnaNoc === 1) {
                 document.getElementById("night2Button").style.display = "block";
             }
-			
+
 			if (aktualnaNoc === 2) {
                 document.getElementById("night3Button").style.display = "block";
             }
-			
+
 			if (aktualnaNoc === 3) {
                 document.getElementById("night4Button").style.display = "block";
+            }
+
+			if (aktualnaNoc === 4) {
+                document.getElementById("night5Button").style.display = "block";
+            }
+
+			if (aktualnaNoc === 5) {
+                document.getElementById("night6Button").style.display = "block";
             }
 
             document.getElementById("gra").style.display = "none";
@@ -1048,8 +1307,8 @@ slimeAktywny = true;
 
             document.querySelector("#wygranaOkno p").textContent =
                 "Won Night " + aktualnaNoc + "!";
-				
-			if (aktualnaNoc + 1 > odblokowanaNoc) {
+
+            if (aktualnaNoc + 1 > odblokowanaNoc) {
                 odblokowanaNoc = aktualnaNoc + 1;
                 localStorage.setItem("odblokowanaNoc", odblokowanaNoc);
             }
@@ -1066,15 +1325,20 @@ slimeAktywny = true;
             clearTimeout(endermanAttackTimer);
 			clearTimeout(creacingSpawnTimer);
             clearTimeout(creacingAttackTimer);
+			clearTimeout(spiderSpawnTimer);
+            clearTimeout(spiderAttackTimer);
+            clearTimeout(spiderWebTimer);
+			clearTimeout(phantomSpawnTimer);
+            clearTimeout(phantomAttackTimer);
             clearInterval(gameTimer);
             if (flashCooldownTimer !== null) {
                 clearInterval(flashCooldownTimer);
                 flashCooldownTimer = null;
             }
         }
-		
+
 		document.addEventListener("keydown", function(event) {
-            if (!graTrwa) return;
+            if (!graTrwa || event.repeat) return;
 
             if (event.key.toLowerCase() === "a") {
                 zamknijLeweDrzwi();
@@ -1093,11 +1357,21 @@ slimeAktywny = true;
 
                 if (creacingAktywny) {
                     clearTimeout(creacingAttackTimer);
+
                     creacingAktywny = false;
+
                     document.getElementById("creacing").style.display = "none";
-                    document.getElementById("komunikat").innerText = "";
+
                     ustawCreacing();
                 }
+
+                if (spiderAktywny) {
+                    pokonajSpidera();
+                }
+            }
+
+			if (event.key.toLowerCase() === "e" && phantomAktywny) {
+                blyskPhantom();
             }
         });
 
